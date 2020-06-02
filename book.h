@@ -16,7 +16,7 @@ struct book{
 };
 
 struct CARD_INDEX{
-	book** pB;		//указатель на картотеку
+	book* pB;		//указатель на картотеку
 	size_t count;   //количество книг в картотеке
 	size_t cap;		//емкость картотеки
 };
@@ -29,8 +29,13 @@ void printAllBooks(const CARD_INDEX* pCard);
 void deleteBook(CARD_INDEX* pCard);
 void writeToFile(const CARD_INDEX* pCard);
 void readFromFile(CARD_INDEX* pCard);
-void sortByAuthor(CARD_INDEX* pCard);
-void sortByTitle(CARD_INDEX* pCard);
-void sortByYear(CARD_INDEX* pCard);
-void sortByPrice(CARD_INDEX* pCard);
-void sortByCategory(CARD_INDEX* pCard);
+
+
+
+void sort(CARD_INDEX* pCard, int (const book& b1, const book& b2));
+
+int cmpAuthor(const book& b1, const book& b2);
+int cmpTitle(const book& b1, const book& b2);
+int cmpCategory(const book& b1, const book& b2);
+int cmpPrice(const book& b1, const book& b2);
+int cmpYear(const book& b1, const book& b2);

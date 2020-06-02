@@ -90,19 +90,19 @@ void addBook(CARD_INDEX* pCard)
 {
 	if (pCard->count >= pCard->cap) //емкость исчерпана
 	{ //перераспределяем память...
-		pCard->cap *=2;
+		pCard->cap +=1;
 		book* newB = new book[pCard->cap];
 		for (int i = 0; i < pCard->count; i++)
 		{
-			newB[i] = (*pCard->pB)[i];
+			newB[i] = (pCard->pB)[i];
 		}
-		delete[] *pCard->pB;
-		*pCard->pB = newB;
+		delete[] pCard->pB;
+		pCard->pB = newB;
 
 	}
 	//добавляем книгу в картотеку...
 	pCard->count+=1;
-	initBook((*pCard->pB)[pCard->count-1]);
+	initBook(pCard->pB[pCard->count-1]);
 }
 
 void printAllBooks(const CARD_INDEX* pCard) 
@@ -110,7 +110,7 @@ void printAllBooks(const CARD_INDEX* pCard)
 	for (int i = 0; i < pCard->count; i++)
 	{
 		printf("\n\n%d", i+1);
-		printBook((*pCard->pB)[i]);
+		printBook(pCard->pB[i]);
 	}
 }
 
@@ -122,7 +122,7 @@ void deleteBook(CARD_INDEX* pCard)
 
 	do {
 		printf("\nDelete this book:\n");
-		printBook((*pCard->pB)[num - 1]);
+		printBook(pCard->pB[num - 1]);
 		char choice;
 		printf("\n\nYou are sure? (Y/N)\n");
 
@@ -135,7 +135,7 @@ void deleteBook(CARD_INDEX* pCard)
 			//do delete
 			for (int i = num-1; i < pCard->count; i++)
 			{
-				(*pCard->pB)[i]= (*pCard->pB)[i+1];
+				pCard->pB[i]= pCard->pB[i+1];
 			}
 			pCard->count--;
 			return;
@@ -155,8 +155,8 @@ void writeToFile(const CARD_INDEX* pCard)
 		fprintf(pFile, "%d", pCard->count);
 		for (int i = 0; i < pCard->count; i++)
 		{
-			fprintf(pFile, "\n%s\n%s\n%d\n%d\n", (*pCard->pB)[i].author, (*pCard->pB)[i].title, (*pCard->pB)[i].year, (*pCard->pB)[i].price);
-			switch ((*pCard->pB)[i].category)
+			fprintf(pFile, "\n%s\n%s\n%d\n%d\n", pCard->pB[i].author, pCard->pB[i].title, pCard->pB[i].year, pCard->pB[i].price);
+			switch (pCard->pB[i].category)
 			{
 			case FANTASY:
 				fprintf(pFile, "Fantasy\n");
@@ -196,28 +196,28 @@ void readFromFile(CARD_INDEX* pCard)
 	
 	if (pFile) {
 		fscanf(pFile, "%d", &pCard->count);
-		delete[] *pCard->pB;
-		*pCard->pB = new book[pCard->count];
+		delete[] pCard->pB;
+		pCard->pB = new book[pCard->count];
 		pCard->cap = pCard->count;
 		for (int i = 0; i < pCard->count; i++)
 		{
 			
-			fscanf(pFile, "%s", (*pCard->pB)[i].author);
-			fscanf(pFile, "%s", (*pCard->pB)[i].title);
-			fscanf(pFile, "%d", &(*pCard->pB)[i].year);
-			fscanf(pFile, "%d", &(*pCard->pB)[i].price);
+			fscanf(pFile, "%s", pCard->pB[i].author);
+			fscanf(pFile, "%s", pCard->pB[i].title);
+			fscanf(pFile, "%d", &pCard->pB[i].year);
+			fscanf(pFile, "%d", &pCard->pB[i].price);
 
 			char buf[80];
 			fscanf(pFile, "%s", buf);
 
-			if (!strcmp(buf, "Fantasy")) (*pCard->pB)[i].category = FANTASY;
-			else if (!strcmp(buf, "Adventure")) (*pCard->pB)[i].category = ADVENTURE;
-			else if (!strcmp(buf, "Romance")) (*pCard->pB)[i].category = ROMANCE;
-			else if (!strcmp(buf, "ScienceFiction")) (*pCard->pB)[i].category = SCIENCE_FICTION;
-			else if (!strcmp(buf, "Childrens")) (*pCard->pB)[i].category = CHILDRENS;
-			else if (!strcmp(buf, "Poetry")) (*pCard->pB)[i].category = POETRY;
-			else if (!strcmp(buf, "Other")) (*pCard->pB)[i].category = OTHER;
-			else 	(*pCard->pB)[i].category = CATEGORYMAX;
+			if (!strcmp(buf, "Fantasy")) pCard->pB[i].category = FANTASY;
+			else if (!strcmp(buf, "Adventure")) pCard->pB[i].category = ADVENTURE;
+			else if (!strcmp(buf, "Romance")) pCard->pB[i].category = ROMANCE;
+			else if (!strcmp(buf, "ScienceFiction")) pCard->pB[i].category = SCIENCE_FICTION;
+			else if (!strcmp(buf, "Childrens")) pCard->pB[i].category = CHILDRENS;
+			else if (!strcmp(buf, "Poetry")) pCard->pB[i].category = POETRY;
+			else if (!strcmp(buf, "Other")) pCard->pB[i].category = OTHER;
+			else 	pCard->pB[i].category = CATEGORYMAX;
 			
 		}
 
@@ -225,62 +225,48 @@ void readFromFile(CARD_INDEX* pCard)
 	fclose(pFile);
 }
 
-void sortByAuthor(CARD_INDEX* pCard) {
-	for (int i = 1; i < pCard->count+1; i++)
-		for (int j = i; j < pCard->count; j++) // пока j>0 и элемент j-1 > j,
-		{
-			if (strcmp((*pCard->pB)[j - 1].author, (*pCard->pB)[j].author)>0)
-			{
-					std::swap((*pCard->pB)[j - 1], (*pCard->pB)[j]); 
-			}
-		}
+int cmpAuthor(const book& b1, const book& b2)
+{
+	return strcmp(b1.author, b2.author);
+}
+
+
+
+int cmpTitle(const book& b1, const book& b2)
+{
+	return strcmp(b1.title, b2.title);
+}
+
+
+int cmpYear(const book& b1, const book& b2)
+{
+	return (b1.year - b2.year);
+}
+
+int cmpPrice(const book& b1, const book& b2)
+{
+	return b1.price - b2.price;
+}
+int cmpCategory(const book &b1, const book &b2)
+{
+	return static_cast<int>(b1.category - b2.category);
+}
+
+void sort(CARD_INDEX* pCard, int(*cmp)(const book &b1, const book &b2))
+{
 	
-}
-
-void sortByTitle(CARD_INDEX* pCard)
-{
-	for (int i = 1; i < pCard->count + 1; i++)
-		for (int j = i; j < pCard->count; j++) // пока j>0 и элемент j-1 > j,
+	for (int i = 0; i < pCard->count-1; i++)
+	{
+		bool flag = false;
+		for (int j = 0; j < pCard->count - i - 1; j++)
 		{
-			if (strcmp((*pCard->pB)[j - 1].title, (*pCard->pB)[j].title) > 0)
+			if ((cmp)(pCard->pB[j], pCard->pB[j + 1]) > 0)
 			{
-				std::swap((*pCard->pB)[j - 1], (*pCard->pB)[j]);
+				std::swap(pCard->pB[j+1], pCard->pB[j]);
+				
+				flag = 1;
 			}
 		}
-}
-
-void sortByYear(CARD_INDEX* pCard)
-{
-	for (int i = 1; i < pCard->count + 1; i++)
-		for (int j = i; j < pCard->count; j++) // пока j>0 и элемент j-1 > j,
-		{
-			if ((*pCard->pB)[j - 1].year>(*pCard->pB)[j].year)
-			{
-				std::swap((*pCard->pB)[j - 1], (*pCard->pB)[j]);
-			}
-		}
-}
-
-void sortByPrice(CARD_INDEX* pCard)
-{
-	for (int i = 1; i < pCard->count + 1; i++)
-		for (int j = i; j < pCard->count; j++) // пока j>0 и элемент j-1 > j,
-		{
-			if ((*pCard->pB)[j - 1].price > (*pCard->pB)[j].price)
-			{
-				std::swap((*pCard->pB)[j - 1], (*pCard->pB)[j]);
-			}
-		}
-}
-
-void sortByCategory(CARD_INDEX* pCard)
-{
-	for (int i = 1; i < pCard->count + 1; i++)
-		for (int j = i; j < pCard->count; j++) // пока j>0 и элемент j-1 > j,
-		{
-			if ((*pCard->pB)[j - 1].category > (*pCard->pB)[j].category)
-			{
-				std::swap((*pCard->pB)[j - 1], (*pCard->pB)[j]);
-			}
-		}
+		if (!flag) break;
+	}
 }
